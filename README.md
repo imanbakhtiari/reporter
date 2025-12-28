@@ -30,6 +30,8 @@ python3 app.py
 ```
 
 
+- swagger ui at http://127.0.0.1:5000/apidocs
+
 
 - and then for testing the app the full ranking
 ```

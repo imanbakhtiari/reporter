@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flasgger import Swagger, swag_from
 import csv
 import re
 from collections import defaultdict
@@ -7,6 +8,13 @@ from datetime import datetime
 CSV_FILE = "Provider_ascii_1.csv"
 
 app = Flask(__name__)
+
+# Swagger config (minimal)
+app.config["SWAGGER"] = {
+    "title": "Market Feed Analysis API",
+    "uiversion": 3
+}
+Swagger(app)
 
 rows = []
 
@@ -18,6 +26,7 @@ def human(ts):
     return datetime.utcfromtimestamp(ts).strftime("%Y-%m-%d %H:%M:%S")
 
 
+# Load CSV once
 with open(CSV_FILE, newline="") as f:
     reader = csv.DictReader(f)
     for row in reader:
@@ -36,6 +45,25 @@ with open(CSV_FILE, newline="") as f:
 
 
 @app.route("/sorting")
+@swag_from({
+    "tags": ["Analysis"],
+    "parameters": [
+        {
+            "name": "seqno",
+            "in": "query",
+            "type": "integer",
+            "required": True,
+            "description": "Sequence number of the market event (e.g. 6)"
+        }
+    ],
+    "responses": {
+        200: {
+            "description": "Sorted providers by arrival time for the given seqno"
+        },
+        400: {"description": "seqno is required"},
+        404: {"description": "seqno not found"}
+    }
+})
 def sorting():
     seqno = request.args.get("seqno", type=int)
     if seqno is None:
@@ -60,16 +88,21 @@ def sorting():
         "slowest_timestamp": human(slowest["timestamp"]),
         "average_timestamp": human(avg_ts),
         "sorted_by_arrival": [
-            {
-                "provider": d["provider"],
-                "timestamp": human(d["timestamp"])
-            }
+            {"provider": d["provider"], "timestamp": human(d["timestamp"])}
             for d in data
         ]
     })
 
 
 @app.route("/ranking")
+@swag_from({
+    "tags": ["Analysis"],
+    "responses": {
+        200: {
+            "description": "Overall provider ranking across all seqnos"
+        }
+    }
+})
 def ranking():
     by_seqno = defaultdict(list)
     for r in rows:
@@ -98,10 +131,7 @@ def ranking():
     ranking.sort(key=lambda x: -x["fastest_count"])
 
     return jsonify({
-        "best_providers_to_keep": [
-            ranking[0]["provider"],
-            ranking[1]["provider"]
-        ],
+        "best_providers_to_keep": [ranking[0]["provider"], ranking[1]["provider"]],
         "ranking": ranking
     })
 
