@@ -1,3 +1,5 @@
+- Python 3.12.3
+
 Overview
 
 This project analyzes market data packets received from multiple network providers (feeds) and compares their arrival times.
