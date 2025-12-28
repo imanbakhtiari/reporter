@@ -11,12 +11,18 @@ Which provider is fastest per event
 
 Which providers are best overall across all events
 
+
 -  clone the project first
 ```bash
 git clone https://github.com/imanbakhtiari/reporter.git && cd reporter
 ```
 
-- install the requirements
+- 1- docker installation
+```bash
+sudo docker compose up -d --build
+```
+
+- 2- host install the requirements
 ```bash
 python3 -m venv venv 
 source venv/bin/activate
