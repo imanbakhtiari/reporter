@@ -1,0 +1,10 @@
+services:
+  reporter:
+    build: .
+    container_name: reporter
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+    volumes:
+      - ./Provider_ascii_1.csv:/app/Provider_ascii_1.csv:ro
+
